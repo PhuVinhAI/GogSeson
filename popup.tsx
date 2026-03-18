@@ -6,26 +6,10 @@ import { Button } from "@/components/ui/button"
 import "globals.css"
 
 function IndexPopup() {
-  const [isNotebookLM, setIsNotebookLM] = useState(false)
-  const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null)
   const [resultJSON, setResultJSON] = useState<string>("")
   const [error, setError] = useState<string>("")
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (typeof chrome !== "undefined" && chrome.tabs) {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const tab = tabs[0]
-        setCurrentTab(tab)
-        if (tab?.url?.includes("notebooklm.google.com")) {
-          setIsNotebookLM(true)
-        } else {
-          setIsNotebookLM(false)
-        }
-      })
-    }
-  }, [])
 
   const extractSession = async () => {
     try {
@@ -33,13 +17,7 @@ function IndexPopup() {
       setError("")
       setResultJSON("")
 
-      if (!isNotebookLM || !currentTab?.id) {
-        throw new Error(
-          "Vui lòng mở trang notebooklm.google.com và đăng nhập trước khi trích xuất."
-        )
-      }
-
-      // 1. Extract Cookies
+      // 1. Lấy tất cả Cookies của Google trước để xác minh trạng thái đăng nhập
       const domains = [".google.com", "notebooklm.google.com", ".youtube.com"]
       let allCookies: chrome.cookies.Cookie[] = []
 
@@ -48,21 +26,58 @@ function IndexPopup() {
         allCookies = [...allCookies, ...cookies]
       }
 
-      // Filter unique cookies
+      // Lọc cookie trùng lặp
       const uniqueMap = new Map<string, chrome.cookies.Cookie>()
       allCookies.forEach((cookie) => {
         uniqueMap.set(`${cookie.name}-${cookie.domain}-${cookie.path}`, cookie)
       })
       const uniqueCookies = Array.from(uniqueMap.values())
 
-      // Check auth
+      // Kiểm tra xem đã có cookie đăng nhập của Google chưa
       const hasAuth = uniqueCookies.some(
         (c) => c.name === "SID" || c.name === "HSID"
       )
       if (!hasAuth) {
         throw new Error(
-          "Không tìm thấy thông tin đăng nhập Google. Hãy chắc chắn bạn đã đăng nhập."
+          "Bạn chưa đăng nhập Google. Vui lòng mở tab mới, đăng nhập tài khoản Google và thử lại."
         )
+      }
+
+      // 2. Tìm tab NotebookLM hiện tại hoặc Tự động tạo tab chạy ngầm
+      let targetTabId: number | undefined
+      const currentTabs = await chrome.tabs.query({ active: true, currentWindow: true })
+      const currentTab = currentTabs[0]
+
+      if (currentTab?.url?.includes("notebooklm.google.com")) {
+        targetTabId = currentTab.id
+      } else {
+        // Tìm xem có tab NotebookLM nào khác đang mở không
+        const tabs = await chrome.tabs.query({ url: "*://notebooklm.google.com/*" })
+        if (tabs.length > 0) {
+          targetTabId = tabs[0].id
+        } else {
+          // Tự động mở một tab NotebookLM chạy ngầm (active: false để không làm tắt popup)
+          const newTab = await chrome.tabs.create({
+            url: "https://notebooklm.google.com/",
+            active: false
+          })
+          targetTabId = newTab.id
+
+          // Chờ cho tab mới tải xong hoàn toàn
+          await new Promise<void>((resolve) => {
+            chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
+              if (tabId === targetTabId && changeInfo.status === "complete") {
+                chrome.tabs.onUpdated.removeListener(listener)
+                // Đợi thêm 1.5 giây để Javascript của trang NotebookLM kịp ghi LocalStorage
+                setTimeout(() => resolve(), 1500)
+              }
+            })
+          })
+        }
+      }
+
+      if (!targetTabId) {
+        throw new Error("Không thể định vị hoặc khởi tạo tab NotebookLM tự động.")
       }
 
       // Transform cookies to Playwright format
@@ -150,29 +165,23 @@ function IndexPopup() {
       </div>
 
       <div className="mb-4">
-        {isNotebookLM ? (
-          <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 p-2 text-sm text-green-700">
-            <CheckCircle className="h-4 w-4 shrink-0" />
-            <span>Đang ở trang NotebookLM. Sẵn sàng trích xuất!</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-700">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>Vui lòng mở trang notebooklm.google.com để sử dụng.</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 p-2 text-sm text-blue-700">
+          <CheckCircle className="h-4 w-4 shrink-0" />
+          <span>Hệ thống 1-Click Auto: Tự động kiểm tra đăng nhập & mở NotebookLM ngầm để lấy dữ liệu.</span>
+        </div>
       </div>
 
       <Button
         onClick={extractSession}
-        disabled={loading || !isNotebookLM}
+        disabled={loading}
         className="mb-4 w-full bg-blue-600 text-white hover:bg-blue-700">
-        {loading ? "Đang trích xuất..." : "Extract Session"}
+        {loading ? "Đang xử lý tự động..." : "1-Click Extract Session"}
       </Button>
 
       {error && (
-        <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-600">
-          {error}
+        <div className="mb-4 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-600">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
