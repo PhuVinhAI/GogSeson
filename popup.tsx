@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-export default function IndexPopup() {
+function IndexPopup() {
   const [isNotebookLM, setIsNotebookLM] = useState(false)
   const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null)
   const [resultJSON, setResultJSON] = useState<string>("")
@@ -289,3 +289,5 @@ export default function IndexPopup() {
     </div>
   )
 }
+
+export default IndexPopup

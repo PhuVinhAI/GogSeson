@@ -33,6 +33,9 @@
     "host_permissions": [
       "*://*.google.com/*",
       "*://*.youtube.com/*"
-    ]
+    ],
+    "action": {
+      "default_popup": "popup.html"
+    }
   }
 }

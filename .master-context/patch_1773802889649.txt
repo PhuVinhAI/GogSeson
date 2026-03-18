@@ -1,0 +1,74 @@
+<<<START_OF_DIFF>>>
+```json
+# File: package.json
+<<<<<<< SEARCH
+  "manifest": {
+    "permissions": [
+      "cookies",
+      "activeTab",
+      "scripting",
+      "tabs"
+    ],
+    "host_permissions": [
+      "*://*.google.com/*",
+      "*://*.youtube.com/*"
+    ]
+  }
+=======
+  "manifest": {
+    "permissions": [
+      "cookies",
+      "activeTab",
+      "scripting",
+      "tabs"
+    ],
+    "host_permissions": [
+      "*://*.google.com/*",
+      "*://*.youtube.com/*"
+    ],
+    "action": {
+      "default_popup": "popup.html"
+    }
+  }
+>>>>>>> REPLACE
+```
+
+```tsx
+# File: popup.tsx
+<<<<<<< SEARCH
+import { useEffect, useState } from "react"
+
+export default function IndexPopup() {
+  const [isNotebookLM, setIsNotebookLM] = useState(false)
+=======
+import { useEffect, useState } from "react"
+
+function IndexPopup() {
+  const [isNotebookLM, setIsNotebookLM] = useState(false)
+>>>>>>> REPLACE
+```
+
+```tsx
+# File: popup.tsx
+<<<<<<< SEARCH
+        </div>
+      )}
+    </div>
+  )
+}
+=======
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default IndexPopup
+>>>>>>> REPLACE
+```
+
+```bash
+# Terminal: npx tsc --noEmit
+# Commit: fix: restore action field in manifest and standard component export to fix missing popup
+```
+<<<END_OF_DIFF>>>
