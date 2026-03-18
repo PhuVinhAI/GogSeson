@@ -1,0 +1,35 @@
+<<<START_OF_DIFF>>>
+```json
+# File: package.json
+<<<<<<< SEARCH
+  "manifest": {
+    "permissions": [
+      "cookies",
+      "activeTab",
+      "scripting",
+      "tabs"
+    ],
+    "host_permissions": [
+      "*://*.google.com/*",
+      "*://*.youtube.com/*"
+    ]
+  }
+=======
+  "manifest": {
+    "permissions": [
+      "cookies",
+      "activeTab",
+      "scripting",
+      "tabs"
+    ],
+    "host_permissions": [
+      "*://*.google.com/*",
+      "*://*.youtube.com/*"
+    ],
+    "action": {
+      "default_popup": "popup.html"
+    }
+  }
+>>>>>>> REPLACE
+```
+<<<END_OF_DIFF>>>

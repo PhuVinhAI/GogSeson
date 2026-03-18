@@ -24,8 +24,15 @@
     "typescript": "5.3.3"
   },
   "manifest": {
+    "permissions": [
+      "cookies",
+      "activeTab",
+      "scripting",
+      "tabs"
+    ],
     "host_permissions": [
-      "https://*/*"
+      "*://*.google.com/*",
+      "*://*.youtube.com/*"
     ]
   }
 }
