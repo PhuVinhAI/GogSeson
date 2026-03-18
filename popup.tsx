@@ -33,9 +33,9 @@ function IndexPopup() {
       })
       const uniqueCookies = Array.from(uniqueMap.values())
 
-      // Kiểm tra xem đã có cookie đăng nhập của Google chưa
+      // Kiểm tra xem đã có cookie đăng nhập cốt lõi của CHÍNH XÁC Google chưa (Loại trừ cookie rác của YouTube)
       const hasAuth = uniqueCookies.some(
-        (c) => c.name === "SID" || c.name === "HSID"
+        (c) => (c.name === "SID" || c.name === "HSID") && c.domain === ".google.com"
       )
       if (!hasAuth) {
         throw new Error(

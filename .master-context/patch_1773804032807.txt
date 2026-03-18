@@ -1,0 +1,23 @@
+<<<START_OF_DIFF>>>
+```tsx
+# File: popup.tsx
+<<<<<<< SEARCH
+      // Kiểm tra xem đã có cookie đăng nhập của Google chưa
+      const hasAuth = uniqueCookies.some(
+        (c) => c.name === "SID" || c.name === "HSID"
+      )
+      if (!hasAuth) {
+=======
+      // Kiểm tra xem đã có cookie đăng nhập cốt lõi của CHÍNH XÁC Google chưa (Loại trừ cookie rác của YouTube)
+      const hasAuth = uniqueCookies.some(
+        (c) => (c.name === "SID" || c.name === "HSID") && c.domain === ".google.com"
+      )
+      if (!hasAuth) {
+>>>>>>> REPLACE
+```
+
+```bash
+# Terminal: npx tsc --noEmit
+# Commit: fix: strict google domain check for auth cookies to handle residual youtube sessions
+```
+<<<END_OF_DIFF>>>
