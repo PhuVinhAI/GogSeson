@@ -1,0 +1,44 @@
+<<<START_OF_DIFF>>>
+```tsx
+# File: popup.tsx
+<<<<<<< SEARCH
+      // Lấy TẤT CẢ các tab thực sự đang mở bằng giao thức http/https của NotebookLM
+      const nblmTabs = await chrome.tabs.query({ url: "*://notebooklm.google.com/*" })
+      
+      // Ưu tiên tab đang được active (nếu bạn đang trực tiếp đứng ở trang đó)
+      const activeNblmTab = nblmTabs.find((t) => t.active && t.currentWindow)
+
+      if (activeNblmTab?.id) {
+=======
+      // Lấy TẤT CẢ các tab thực sự đang mở bằng giao thức http/https của NotebookLM
+      const nblmTabs = await chrome.tabs.query({ url: "*://notebooklm.google.com/*" })
+      
+      // Ưu tiên tab đang được active (nếu bạn đang trực tiếp đứng ở trang đó)
+      const activeNblmTab = nblmTabs.find((t) => t.active)
+
+      if (activeNblmTab?.id) {
+>>>>>>> REPLACE
+```
+
+```tsx
+# File: popup.tsx
+<<<<<<< SEARCH
+      // 2. Extract LocalStorage
+      const injectionResults = await chrome.scripting.executeScript({
+        target: { tabId: currentTab.id },
+        func: () => {
+          const ls: { name: string; value: string }[] = []
+=======
+      // 3. Extract LocalStorage
+      const injectionResults = await chrome.scripting.executeScript({
+        target: { tabId: targetTabId },
+        func: () => {
+          const ls: { name: string; value: string }[] = []
+>>>>>>> REPLACE
+```
+
+```bash
+# Terminal: npx tsc --noEmit
+# Commit: fix: use correct targetTabId for scripting injection and resolve ts errors
+```
+<<<END_OF_DIFF>>>

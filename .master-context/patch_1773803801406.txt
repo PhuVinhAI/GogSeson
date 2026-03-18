@@ -1,0 +1,91 @@
+<<<START_OF_DIFF>>>
+```tsx
+# File: popup.tsx
+<<<<<<< SEARCH
+      // 2. Tìm tab NotebookLM hiện tại hoặc Tự động tạo tab chạy ngầm
+      let targetTabId: number | undefined
+      const currentTabs = await chrome.tabs.query({ active: true, currentWindow: true })
+      const currentTab = currentTabs[0]
+
+      if (currentTab?.url?.includes("notebooklm.google.com")) {
+        targetTabId = currentTab.id
+      } else {
+        // Tìm xem có tab NotebookLM nào khác đang mở không
+        const tabs = await chrome.tabs.query({ url: "*://notebooklm.google.com/*" })
+        if (tabs.length > 0) {
+          targetTabId = tabs[0].id
+        } else {
+          // Tự động mở một tab NotebookLM chạy ngầm (active: false để không làm tắt popup)
+          const newTab = await chrome.tabs.create({ 
+            url: "https://notebooklm.google.com/", 
+            active: false 
+          })
+          targetTabId = newTab.id
+          
+          // Chờ cho tab mới tải xong hoàn toàn
+          await new Promise<void>((resolve) => {
+            chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
+              if (tabId === targetTabId && changeInfo.status === "complete") {
+                chrome.tabs.onUpdated.removeListener(listener)
+                // Đợi thêm 1.5 giây để Javascript của trang NotebookLM kịp ghi LocalStorage
+                setTimeout(() => resolve(), 1500)
+              }
+            })
+          })
+        }
+      }
+
+      if (!targetTabId) {
+        throw new Error("Không thể định vị hoặc khởi tạo tab NotebookLM tự động.")
+      }
+=======
+      // 2. Định vị tab NotebookLM chuẩn xác (Tránh lỗi dính URL của extension khác)
+      let targetTabId: number | undefined
+      
+      // Lấy TẤT CẢ các tab thực sự đang mở bằng giao thức http/https của NotebookLM
+      const nblmTabs = await chrome.tabs.query({ url: "*://notebooklm.google.com/*" })
+      
+      // Ưu tiên tab đang được active (nếu bạn đang trực tiếp đứng ở trang đó)
+      const activeNblmTab = nblmTabs.find((t) => t.active && t.currentWindow)
+
+      if (activeNblmTab?.id) {
+        targetTabId = activeNblmTab.id
+      } else if (nblmTabs.length > 0 && nblmTabs[0].id) {
+        // Nếu không có tab active, lấy tab NotebookLM đầu tiên tìm được
+        targetTabId = nblmTabs[0].id
+      } else {
+        // Nếu không có tab nào tồn tại, tự động tạo tab chạy ngầm
+        const newTab = await chrome.tabs.create({ 
+          url: "https://notebooklm.google.com/", 
+          active: false 
+        })
+        targetTabId = newTab.id
+        
+        // Chờ tab tải xong hoàn toàn
+        await new Promise<void>((resolve) => {
+          chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
+            if (tabId === targetTabId && changeInfo.status === "complete") {
+              chrome.tabs.onUpdated.removeListener(listener)
+              setTimeout(() => resolve(), 1500)
+            }
+          })
+        })
+      }
+
+      if (!targetTabId) {
+        throw new Error("Không thể định vị hoặc khởi tạo tab NotebookLM tự động.")
+      }
+
+      // Xác minh lại lần cuối xem tab mục tiêu có bị Extension khác chiếm quyền không
+      const finalTab = await chrome.tabs.get(targetTabId)
+      if (!finalTab.url || !finalTab.url.startsWith("http")) {
+        throw new Error("Tab NotebookLM đã bị một Extension khác (VD: Trình đóng băng tab) chiếm quyền. Vui lòng mở thủ công.")
+      }
+>>>>>>> REPLACE
+```
+
+```bash
+# Terminal: npx tsc --noEmit
+# Commit: fix: use strict match pattern to prevent injection into chrome-extension:// URLs
+```
+<<<END_OF_DIFF>>>
