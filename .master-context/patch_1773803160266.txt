@@ -1,3 +1,48 @@
+<<<START_OF_DIFF>>>
+```json
+# File: package.json
+<<<<<<< SEARCH
+  "manifest": {
+    "host_permissions": [
+      "https://*/*"
+    ]
+  }
+=======
+  "manifest": {
+    "permissions": [
+      "cookies",
+      "activeTab",
+      "scripting",
+      "tabs"
+    ],
+    "host_permissions": [
+      "*://*.google.com/*",
+      "*://*.youtube.com/*"
+    ],
+    "action": {
+      "default_popup": "popup.html"
+    }
+  }
+>>>>>>> REPLACE
+```
+
+```tsx
+# File: popup.tsx
+<<<<<<< SEARCH
+import { LoginForm } from "@/components/login-form"
+
+import "globals.css"
+
+const IndexPopup = () => {
+  return (
+    <div className="flex h-[25rem] w-[25rem] flex-col">
+      <LoginForm />
+    </div>
+  )
+}
+
+export default IndexPopup
+=======
 import { useEffect, useState } from "react"
 import { AlertCircle, CheckCircle, Copy, Download, FileJson } from "lucide-react"
 
@@ -213,3 +258,13 @@ function IndexPopup() {
 }
 
 export default IndexPopup
+>>>>>>> REPLACE
+```
+
+```bash
+# Delete: content.tsx
+# Delete: components/login-form.tsx
+# Terminal: npx tsc --noEmit
+# Commit: feat: reconstruct with Tailwind, shadcn and explicit manifest action
+```
+<<<END_OF_DIFF>>>
